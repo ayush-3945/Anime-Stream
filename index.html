@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PandeyVerse 🎬</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(120deg,#0d47a1,#1976d2,#42a5f5);
+  color: white;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  background: rgba(0,0,50,0.6);
+}
+
+header h1 {
+  font-size: 28px;
+  font-weight: bold;
+  background: linear-gradient(90deg, royalblue, cyan, violet);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  0% {background-position:0% 50%;}
+  50% {background-position:100% 50%;}
+  100% {background-position:0% 50%;}
+}
+
+nav a {
+  margin: 0 15px;
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.container {
+  padding: 20px 40px;
+}
+
+.filters {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+select {
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+}
+
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
+  gap: 20px;
+}
+
+.movie-card {
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  transition: transform 0.3s;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.2);
+}
+
+.movie-card img {
+  width: 100%;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  height: 320px;
+  object-fit: cover;
+}
+
+.btn {
+  padding: 6px 10px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 5px;
+  background: royalblue;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #1565c0;
+}
+
+footer {
+  text-align: center;
+  padding: 15px;
+  margin-top: 40px;
+  background: rgba(0,0,50,0.6);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top:0;
+  left:0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #222;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  text-align: center;
+}
+
+.close {
+  float: right;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+#loginPage {
+  display: none;
+  position: fixed;
+  top:0;
+  left:0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+}
+
+#loginPage input {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 5px;
+  border: none;
+  width: 200px;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PandeyVerse 🎬</h1>
+  <nav>
+    <a onclick="showHome()">Home</a>
+    <a onclick="showWatchlist()">Watchlist</a>
+    <a onclick="showLogin()">Login</a>
+  </nav>
+</header>
+
+<div class="container" id="mainContent">
+  <div class="filters">
+    <select id="genreFilter">
+      <option value="all">All Genres</option>
+      <option value="action">Action</option>
+      <option value="anime">Anime</option>
+      <option value="sci-fi">Sci-Fi</option>
+      <option value="drama">Drama</option>
+    </select>
+    <select id="ratingSort">
+      <option value="default">Sort by Rating</option>
+      <option value="high">High to Low</option>
+      <option value="low">Low to High</option>
+    </select>
+  </div>
+  <div class="movie-grid" id="movieGrid"></div>
+</div>
+
+<footer>
+  <p>© 2025 PandeyVerse. All Rights Reserved.</p>
+</footer>
+
+<!-- Modal -->
+<div class="modal" id="movieModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2 id="modalTitle"></h2>
+    <img id="modalImage" src="" alt="" style="width:100%;border-radius:10px;margin-bottom:10px;"/>
+    <p id="modalDesc"></p>
+    <button class="btn" onclick="addToWatchlist()">Add to Watchlist</button>
+  </div>
+</div>
+
+<!-- Login -->
+<div id="loginPage">
+  <h2 id="loginTitle">Login / Signup</h2>
+  <input type="text" id="username" placeholder="Username"/>
+  <input type="password" id="password" placeholder="Password"/>
+  <button class="btn" onclick="loginSignup()">Submit</button>
+  <button class="btn" onclick="closeLogin()">Close</button>
+</div>
+
+<script>
+let movies=[
+  { title:"Inception", genre:"sci-fi", rating:9, desc:"A dream within a dream sci-fi thriller.", img:"Inception.jpg"},
+  { title:"Attack on Titan", genre:"anime", rating:9.5, desc:"Humanity fights against Titans.", img:"attack_on_titan.jpg"},
+  { title:"Naruto Shippuden", genre:"anime", rating:9.2, desc:"Journey of Naruto becoming Hokage.", img:"naruto-icon-14691.png"},
+  { title:"Demon Slayer", genre:"anime", rating:8.9, desc:"Tanjiro fights demons to save his sister.", img:"demonslayer.png"},
+  { title:"One Piece", genre:"anime", rating:9.3, desc:"Luffy's adventure to become Pirate King.", img:"one-piece.jpg"},
+  { title:"Avengers: Endgame", genre:"action", rating:8.4, desc:"The final battle against Thanos.", img:"Avengers.jpg"},
+  { title:"Iron Man", genre:"action", rating:8.1, desc:"Tony Stark becomes the armored hero.", img:"iron-man.jpg"},
+  { title:"Interstellar", genre:"sci-fi", rating:8.6, desc:"Exploration through space and time.", img:"interstellar.jpg"},
+  { title:"Stranger Things", genre:"drama", rating:8.7, desc:"Kids fight supernatural forces in Hawkins.", img:"Strangers.jpg"},
+  { title:"Your Name", genre:"anime", rating:8.8, desc:"A body-swapping romance anime.", img:"YourName.png"},
+  { title:"The Dark Knight", genre:"drama", rating:9, desc:"Batman vs Joker epic tale.", img:"the dark knight.jpg"}
+];
+
+let currentMovie = null;
+let watchlist = JSON.parse(localStorage.getItem("watchlist")) || [];
+let loggedUser = localStorage.getItem("loggedUser") || null;
+
+const movieGrid = document.getElementById("movieGrid");
+const genreFilter = document.getElementById("genreFilter");
+const ratingSort = document.getElementById("ratingSort");
+const modal = document.getElementById("movieModal");
+const modalTitle = document.getElementById("modalTitle");
+const modalDesc = document.getElementById("modalDesc");
+const modalImage = document.getElementById("modalImage");
+const loginPage = document.getElementById("loginPage");
+
+function displayMovies() {
+  movieGrid.innerHTML = "";
+  let filtered = [...movies];
+  if(genreFilter.value !== "all") filtered = filtered.filter(m => m.genre === genreFilter.value);
+  if(ratingSort.value === "high") filtered.sort((a,b) => b.rating - a.rating);
+  else if(ratingSort.value === "low") filtered.sort((a,b) => a.rating - b.rating);
+
+  filtered.forEach(m => {
+    let card = document.createElement("div");
+    card.className = "movie-card";
+    card.innerHTML = `
+      <img src="${m.img}" alt="${m.title}"/>
+      <h3>${m.title}</h3>
+      <p>⭐ ${m.rating}</p>
+      <button class="btn" onclick="openModal('${m.title}')">Details</button>
+    `;
+    movieGrid.appendChild(card);
+  });
+}
+
+function openModal(title) {
+  currentMovie = movies.find(m => m.title === title);
+  modalTitle.innerText = currentMovie.title;
+  modalDesc.innerText = currentMovie.desc;
+  modalImage.src = currentMovie.img;
+  modal.style.display = "flex";
+}
+
+function closeModal() {
+  modal.style.display = "none";
+}
+
+function addToWatchlist() {
+  if(!loggedUser) { alert("Please login first!"); return; }
+  if(!watchlist.includes(currentMovie.title)) watchlist.push(currentMovie.title);
+  localStorage.setItem("watchlist", JSON.stringify(watchlist));
+  alert(currentMovie.title + " added to Watchlist!");
+}
+
+function showLogin() { loginPage.style.display = "flex"; }
+function closeLogin() { loginPage.style.display = "none"; }
+function loginSignup() {
+  let user = document.getElementById("username").value.trim();
+  let pass = document.getElementById("password").value.trim();
+  if(user && pass) {
+    localStorage.setItem("loggedUser", user);
+    loggedUser = user;
+    alert("Welcome "+user);
+    closeLogin();
+  } else alert("Enter username & password");
+}
+
+function showWatchlist() {
+  if(!loggedUser) { alert("Please login first!"); showLogin(); return; }
+  movieGrid.innerHTML = "";
+  movies.filter(m => watchlist.includes(m.title)).forEach(m => {
+    let card = document.createElement("div");
+    card.className = "movie-card";
+    card.innerHTML = `
+      <img src="${m.img}" alt="${m.title}"/>
+      <h3>${m.title}</h3>
+      <p>⭐ ${m.rating}</p>
+      <button class="btn" onclick="openModal('${m.title}')">Details</button>
+    `;
+    movieGrid.appendChild(card);
+  });
+}
+
+function showHome() { displayMovies(); }
+
+genreFilter.addEventListener("change", displayMovies);
+ratingSort.addEventListener("change", displayMovies);
+
+displayMovies();
+</script>
+</body>
+</html>
